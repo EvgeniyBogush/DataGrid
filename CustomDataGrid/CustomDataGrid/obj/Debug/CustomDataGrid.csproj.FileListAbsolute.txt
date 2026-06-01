@@ -1,0 +1,13 @@
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\bin\Debug\Eneca.CustomDataGrid.dll
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\bin\Debug\Eneca.CustomDataGrid.pdb
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\CustomDataGrid.csproj.AssemblyReference.cache
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\Controls\EnecaDataGrid.baml
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\Controls\EnecaDataGrid.g.cs
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\Eneca.CustomDataGrid_MarkupCompile.cache
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\Eneca.CustomDataGrid_MarkupCompile.lref
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\Theme\Generic.baml
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\Eneca.CustomDataGrid.g.resources
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\CustomDataGrid.csproj.CoreCompileInputs.cache
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\Eneca.CustomDataGrid.dll
+C:\Users\Public\SoftwareDevelopment\ENECA\CustomDataGrid\CustomDataGrid\obj\Debug\Eneca.CustomDataGrid.pdb

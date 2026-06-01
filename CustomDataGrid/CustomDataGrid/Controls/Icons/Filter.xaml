@@ -1,0 +1,17 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Geometry x:Key="FilterGeometry">F0 M24,24z M0,0z M19,6L5,6 10.6,12.3067 10.6,16.6667 13.4,18 13.4,12.3067 19,6z</Geometry>
+    <DrawingGroup x:Key="FilterDrawingGroup" ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+        <GeometryDrawing Geometry="{StaticResource FilterGeometry}">
+            <GeometryDrawing.Pen>
+                <Pen Brush="#FF1E7260"
+                     Thickness="1.5"
+                     StartLineCap="Round"
+                     EndLineCap="Round"
+                     LineJoin="Round"
+                     MiterLimit="1" />
+            </GeometryDrawing.Pen>
+        </GeometryDrawing>
+    </DrawingGroup>
+    <DrawingImage x:Key="Filter" Drawing="{StaticResource FilterDrawingGroup}" />
+</ResourceDictionary>

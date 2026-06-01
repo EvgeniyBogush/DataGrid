@@ -1,0 +1,162 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|c:\\users\\public\\softwaredevelopment\\eneca\\customdatagrid\\customdatagrid\\theme\\datagridtheme.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|solutionrelative:customdatagrid\\theme\\datagridtheme.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\customdatagrid\\controls\\columnresizethumb.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|solutionrelative:customdatagrid\\controls\\columnresizethumb.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\customdatagrid\\models\\datagridcolumnmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|solutionrelative:customdatagrid\\models\\datagridcolumnmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\customdatagrid\\theme\\datagridcursors.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|solutionrelative:customdatagrid\\theme\\datagridcursors.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|CustomDataGrid.Demo\\CustomDataGrid.Demo.csproj|C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\customdatagrid.demo\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}|CustomDataGrid.Demo\\CustomDataGrid.Demo.csproj|solutionrelative:customdatagrid.demo\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\customdatagrid\\controls\\icons\\filter.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|solutionrelative:customdatagrid\\controls\\icons\\filter.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\customdatagrid\\controls\\icons\\widehorizontal.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|solutionrelative:customdatagrid\\controls\\icons\\widehorizontal.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\customdatagrid\\controls\\icons\\widehorizontal.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|solutionrelative:customdatagrid\\controls\\icons\\widehorizontal.xaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\customdatagrid\\controls\\enecadatagrid.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{92CBC8F7-8235-4C3E-BE91-1CE00BA61F3C}|CustomDataGrid\\CustomDataGrid.csproj|solutionrelative:customdatagrid\\controls\\enecadatagrid.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "DataGridColumnModel.cs",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Models\\DataGridColumnModel.cs",
+              "RelativeDocumentMoniker": "CustomDataGrid\\Models\\DataGridColumnModel.cs",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Models\\DataGridColumnModel.cs",
+              "RelativeToolTip": "CustomDataGrid\\Models\\DataGridColumnModel.cs",
+              "ViewState": "AgIAADYAAAAAAAAAAAAmwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-31T08:33:33.717Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DataGridCursors.cs",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Theme\\DataGridCursors.cs",
+              "RelativeDocumentMoniker": "CustomDataGrid\\Theme\\DataGridCursors.cs",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Theme\\DataGridCursors.cs",
+              "RelativeToolTip": "CustomDataGrid\\Theme\\DataGridCursors.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAA5wCwAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-31T08:33:14.873Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid.Demo\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "CustomDataGrid.Demo\\MainWindow.xaml",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid.Demo\\MainWindow.xaml",
+              "RelativeToolTip": "CustomDataGrid.Demo\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-31T08:27:12.19Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Filter.xaml",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\Icons\\Filter.xaml",
+              "RelativeDocumentMoniker": "CustomDataGrid\\Controls\\Icons\\Filter.xaml",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\Icons\\Filter.xaml",
+              "RelativeToolTip": "CustomDataGrid\\Controls\\Icons\\Filter.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-31T07:26:51.061Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "WideHorizontal.xaml",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\Icons\\WideHorizontal.xaml",
+              "RelativeDocumentMoniker": "CustomDataGrid\\Controls\\Icons\\WideHorizontal.xaml",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\Icons\\WideHorizontal.xaml",
+              "RelativeToolTip": "CustomDataGrid\\Controls\\Icons\\WideHorizontal.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-31T07:24:36.84Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "WideHorizontal.xaml",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\Icons\\WideHorizontal.xaml",
+              "RelativeDocumentMoniker": "CustomDataGrid\\Controls\\Icons\\WideHorizontal.xaml",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\Icons\\WideHorizontal.xaml",
+              "RelativeToolTip": "CustomDataGrid\\Controls\\Icons\\WideHorizontal.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-31T07:01:32.587Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ColumnResizeThumb.cs",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\ColumnResizeThumb.cs",
+              "RelativeDocumentMoniker": "CustomDataGrid\\Controls\\ColumnResizeThumb.cs",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\ColumnResizeThumb.cs",
+              "RelativeToolTip": "CustomDataGrid\\Controls\\ColumnResizeThumb.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T10:35:55.221Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DataGridTheme.cs",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Theme\\DataGridTheme.cs",
+              "RelativeDocumentMoniker": "CustomDataGrid\\Theme\\DataGridTheme.cs",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Theme\\DataGridTheme.cs",
+              "RelativeToolTip": "CustomDataGrid\\Theme\\DataGridTheme.cs",
+              "ViewState": "AgIAABQAAAAAAAAAAAAQwCcAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T10:22:34.168Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "EnecaDataGrid.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\EnecaDataGrid.xaml.cs",
+              "RelativeDocumentMoniker": "CustomDataGrid\\Controls\\EnecaDataGrid.xaml.cs",
+              "ToolTip": "C:\\Users\\Public\\SoftwareDevelopment\\ENECA\\CustomDataGrid\\CustomDataGrid\\Controls\\EnecaDataGrid.xaml.cs",
+              "RelativeToolTip": "CustomDataGrid\\Controls\\EnecaDataGrid.xaml.cs",
+              "ViewState": "AgIAACwCAAAAAAAAAAAYwGICAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T10:03:08.246Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
