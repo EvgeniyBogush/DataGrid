@@ -1,0 +1,43 @@
+<UserControl x:Class="EnecaDataGrid.Controls.ColumnHeaderControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:EnecaDataGrid.Controls"
+             xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework">
+    <UserControl.Resources>
+        <Style x:Key="HeaderInteractiveTextStyle"
+               TargetType="{x:Type TextBlock}"
+               BasedOn="{StaticResource EnecaDataGridHeaderLabelStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" Value="False">
+                    <Setter Property="Foreground" Value="{StaticResource EnecaDataGridHeaderTextDisabledBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type primitives:DataGridColumnHeader}}}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource EnecaDataGridHeaderTextActiveBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsHeaderPressed, RelativeSource={RelativeSource AncestorType={x:Type controls:ColumnHeaderControl}}}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource EnecaDataGridHeaderTextPressedBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsHeaderClicked, RelativeSource={RelativeSource AncestorType={x:Type controls:ColumnHeaderControl}}}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource EnecaDataGridHeaderTextActiveBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Border x:Name="HeaderShell"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+        <Border.Style>
+            <Style TargetType="{x:Type Border}" BasedOn="{StaticResource EnecaDataGridHeaderSelectionShellStyle}" />
+        </Border.Style>
+        <Grid Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="{Binding Title}"
+                       Style="{StaticResource HeaderInteractiveTextStyle}" />
+        </Grid>
+    </Border>
+</UserControl>

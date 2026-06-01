@@ -1,7 +1,0 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="clr-namespace:Eneca.CustomDataGrid.Controls">
-    <Style TargetType="{x:Type controls:EnecaDataGrid}">
-        <Setter Property="Background" Value="#F5F5F5" />
-    </Style>
-</ResourceDictionary>

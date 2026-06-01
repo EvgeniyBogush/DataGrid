@@ -1,0 +1,56 @@
+<UserControl x:Class="EnecaDataGrid.Controls.ColumnFilterPopup"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:EnecaDataGrid.Controls">
+    <Grid>
+        <ToggleButton x:Name="FilterButton"
+                      Style="{StaticResource EnecaDataGridHeaderFilterToggleStyle}"
+                      IsEnabled="{Binding EnableHeaderSelection, RelativeSource={RelativeSource AncestorType={x:Type local:EnecaDataGrid}}}"
+                      IsChecked="{Binding IsPopupOpen, Mode=TwoWay}"
+                      ToolTip="Filter values">
+            <Image Width="16"
+                   Height="16"
+                   Source="{StaticResource Filter}" />
+        </ToggleButton>
+
+        <Popup AllowsTransparency="True"
+               IsOpen="{Binding IsPopupOpen, Mode=TwoWay}"
+               Placement="Bottom"
+               PlacementTarget="{Binding ElementName=FilterButton}"
+               StaysOpen="False">
+            <Border Style="{StaticResource EnecaDataGridFilterPopupBorderStyle}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}"
+                               Style="{StaticResource EnecaDataGridFilterPopupTitleStyle}" />
+                    <TextBlock Text="{Binding FilterSummary}"
+                               Style="{StaticResource EnecaDataGridFilterPopupSummaryStyle}" />
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="Search values" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
+                        <Button Content="Select all"
+                                Command="{Binding SelectAllCommand}"
+                                Style="{StaticResource EnecaDataGridFilterPopupActionButtonStyle}" />
+                        <Button Content="Clear"
+                                Command="{Binding ClearSelectionCommand}"
+                                Margin="8,0,0,0"
+                                Style="{StaticResource EnecaDataGridFilterPopupActionButtonStyle}" />
+                    </StackPanel>
+
+                    <ScrollViewer MaxHeight="{StaticResource EnecaDataGridFilterPopupOptionsMaxHeight}"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding OptionsView}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding DisplayValue}"
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              Style="{StaticResource EnecaDataGridFilterOptionCheckBoxStyle}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>
