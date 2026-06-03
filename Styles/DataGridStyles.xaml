@@ -14,6 +14,9 @@
     <SolidColorBrush x:Key="EnecaDataGridHeaderSeparatorBrush" Color="#F5F5F5" />
     <SolidColorBrush x:Key="EnecaDataGridRowBackgroundBrush" Color="#FDFDFD" />
     <SolidColorBrush x:Key="EnecaDataGridRowTextBrush" Color="#1B1B1B" />
+    <SolidColorBrush x:Key="EnecaDataGridRowHoverBackgroundBrush" Color="#DCEFEB" />
+    <SolidColorBrush x:Key="EnecaDataGridRowPressedForegroundBrush" Color="#86C3B7" />
+    <SolidColorBrush x:Key="EnecaDataGridRowDisabledForegroundBrush" Color="#BDBDBD" />
     <SolidColorBrush x:Key="EnecaDataGridRowSeparatorBrush" Color="#E6E6E6" />
 
     <Style x:Key="EnecaDataGridControlStyle" TargetType="{x:Type controls:EnecaDataGrid}">
@@ -30,14 +33,18 @@
                     <Border
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
-                        CornerRadius="8"
                         SnapsToDevicePixels="True">
                         <DockPanel LastChildFill="True">
-                            <DataGridColumnHeadersPresenter
+                            <Border
                                 Margin="0,0,0,8"
                                 DockPanel.Dock="Top"
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                            <ScrollViewer Focusable="False">
+                                Style="{DynamicResource EnecaDataGridHeaderShellStyle}">
+                                <DataGridColumnHeadersPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            </Border>
+                            <ScrollViewer
+                                Focusable="False"
+                                BorderThickness="0"
+                                Padding="0">
                                 <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                             </ScrollViewer>
                         </DockPanel>
@@ -48,7 +55,7 @@
     </Style>
 
     <Style x:Key="EnecaDataGridColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
-        <Setter Property="Background" Value="{StaticResource EnecaDataGridHeaderBackgroundBrush}" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource EnecaDataGridHeaderTextBrush}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
@@ -58,7 +65,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
-                    <Grid Background="{TemplateBinding Background}">
+                    <Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                        <ContentPresenter
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            RecognizesAccessKey="True" />
                         <Thumb
                             x:Name="PART_LeftHeaderGripper"
                             Width="0"
@@ -76,10 +92,6 @@
                             controls:ResizeThumbIconBehavior.IconSource="{StaticResource wide_horizontal_Icon_wide_horizontalDrawingImage}"
                             controls:ResizeThumbIconBehavior.IsEnabled="True"
                             Template="{DynamicResource EnecaColumnResizeThumbTemplate}" />
-                        <ContentPresenter
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Grid>
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(controls:ColumnHeaderState.HideRightSeparator)}" Value="True">
@@ -158,15 +170,35 @@
         <Setter Property="Background" Value="{StaticResource EnecaDataGridRowBackgroundBrush}" />
         <Setter Property="Foreground" Value="{StaticResource EnecaDataGridRowTextBrush}" />
         <Setter Property="Margin" Value="0,0,0,4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DataGridRow}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8"
+                        ClipToBounds="True"
+                        SnapsToDevicePixels="True">
+                        <DataGridCellsPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="EnecaDataGridCellStyle" TargetType="{x:Type DataGridCell}">
+        <Setter Property="FontFamily" Value="Montserrat, Segoe UI, Arial" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Foreground" Value="{StaticResource EnecaDataGridRowTextBrush}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Background" Value="{StaticResource EnecaDataGridRowBackgroundBrush}" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Effect" Value="{x:Null}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type DataGridCell}">
@@ -176,6 +208,7 @@
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         <Border
+                            x:Name="PART_RightSeparator"
                             Width="1"
                             Height="24"
                             Margin="0,4,0,4"
@@ -183,24 +216,31 @@
                             VerticalAlignment="Center"
                             Background="{StaticResource EnecaDataGridRowSeparatorBrush}" />
                     </Grid>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(controls:ColumnHeaderState.HideRightSeparator)}" Value="True">
+                            <Setter TargetName="PART_RightSeparator" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
         <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="{StaticResource EnecaDataGridRowBackgroundBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource EnecaDataGridRowDisabledForegroundBrush}" />
+            </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource EnecaDataGridHeaderActiveBackgroundBrush}" />
-                <Setter Property="Foreground" Value="{StaticResource EnecaDataGridHeaderTextActiveBrush}" />
+                <Setter Property="Background" Value="{StaticResource EnecaDataGridRowHoverBackgroundBrush}" />
             </Trigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=(controls:ColumnHeaderState.IsPressed)}" Value="True">
+                <Setter Property="Background" Value="{StaticResource EnecaDataGridRowHoverBackgroundBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource EnecaDataGridRowPressedForegroundBrush}" />
+            </DataTrigger>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="{StaticResource EnecaDataGridHeaderActiveBackgroundBrush}" />
-                <Setter Property="Foreground" Value="{StaticResource EnecaDataGridHeaderTextActiveBrush}" />
-            </Trigger>
-            <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                <Setter Property="Background" Value="{StaticResource EnecaDataGridHeaderActiveBackgroundBrush}" />
-                <Setter Property="Foreground" Value="{StaticResource EnecaDataGridHeaderTextActiveBrush}" />
+                <Setter Property="Background" Value="{StaticResource EnecaDataGridRowHoverBackgroundBrush}" />
             </Trigger>
             <DataTrigger Binding="{Binding CellVisualStateMode, RelativeSource={RelativeSource AncestorType={x:Type controls:EnecaDataGrid}}}" Value="{x:Static local:CellVisualStateMode.AlwaysDefault}">
-                <Setter Property="Background" Value="{StaticResource EnecaDataGridRowBackgroundBrush}" />
+                <Setter Property="Background" Value="Transparent" />
                 <Setter Property="Foreground" Value="{StaticResource EnecaDataGridRowTextBrush}" />
             </DataTrigger>
         </Style.Triggers>
@@ -243,5 +283,4 @@
                 Background="{StaticResource EnecaDataGridHeaderSeparatorBrush}" />
         </Grid>
     </ControlTemplate>
-
 </ResourceDictionary>

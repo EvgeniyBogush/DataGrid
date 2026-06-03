@@ -1,9 +1,9 @@
 using System.Collections.Specialized;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -13,14 +13,30 @@ public sealed class EnecaDataGrid : DataGrid
 {
     private DataGridTemplateColumn? _checkBoxColumn;
 
+    static EnecaDataGrid()
+    {
+        EventManager.RegisterClassHandler(typeof(DataGridCell), LoadedEvent, new RoutedEventHandler(DataGridCellLoaded));
+        EventManager.RegisterClassHandler(typeof(DataGridColumnHeader), LoadedEvent, new RoutedEventHandler(DataGridColumnHeaderLoaded));
+        EventManager.RegisterClassHandler(typeof(DataGridCell), PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(DataGridCellPreviewMouseLeftButtonDown), true);
+        EventManager.RegisterClassHandler(typeof(DataGridCell), PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(DataGridCellPreviewMouseLeftButtonUp), true);
+        EventManager.RegisterClassHandler(typeof(CheckBox), PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(RowCheckBoxPreviewMouseLeftButtonDown), true);
+    }
+
     public EnecaDataGrid()
     {
         Loaded += (_, _) => ApplyCurrentConfiguration();
         Columns.CollectionChanged += ColumnsCollectionChanged;
+        LoadingRow += (_, e) =>
+        {
+            ScheduleUpdateColumnVisualStates();
+            UpdateRowSelectionState(e.Row);
+        };
+        SelectionChanged += (_, _) => ScheduleUpdateRowSelectionStates();
+        SelectedCellsChanged += (_, _) => ScheduleUpdateRowSelectionStates();
         ColumnReordered += (_, _) =>
         {
             EnsureCheckBoxColumnPosition();
-            ScheduleUpdateColumnHeaderStates();
+            ScheduleUpdateColumnVisualStates();
         };
     }
 
@@ -37,13 +53,6 @@ public sealed class EnecaDataGrid : DataGrid
             typeof(bool),
             typeof(EnecaDataGrid),
             new PropertyMetadata(false, OnFreezeFirstColumnChanged));
-
-    public static readonly DependencyProperty FilterColumnIndicesProperty =
-        DependencyProperty.Register(
-            nameof(FilterColumnIndices),
-            typeof(string),
-            typeof(EnecaDataGrid),
-            new PropertyMetadata(null, OnFilterColumnIndicesChanged));
 
     public static readonly DependencyProperty EnableHeaderSelectionProperty =
         DependencyProperty.Register(
@@ -71,12 +80,6 @@ public sealed class EnecaDataGrid : DataGrid
         set => SetValue(FreezeFirstColumnProperty, value);
     }
 
-    public string? FilterColumnIndices
-    {
-        get => (string?)GetValue(FilterColumnIndicesProperty);
-        set => SetValue(FilterColumnIndicesProperty, value);
-    }
-
     public bool EnableHeaderSelection
     {
         get => (bool)GetValue(EnableHeaderSelectionProperty);
@@ -95,7 +98,6 @@ public sealed class EnecaDataGrid : DataGrid
         {
             grid.UpdateCheckBoxColumn();
             grid.UpdateFrozenColumns();
-            grid.UpdateFilterVisibility();
         }
     }
 
@@ -107,28 +109,20 @@ public sealed class EnecaDataGrid : DataGrid
         }
     }
 
-    private static void OnFilterColumnIndicesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is EnecaDataGrid grid)
-        {
-            grid.UpdateFilterVisibility();
-        }
-    }
-
     private void ColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         EnsureCheckBoxColumnPosition();
         UpdateFrozenColumns();
-        UpdateFilterVisibility();
-        ScheduleUpdateColumnHeaderStates();
+        ScheduleUpdateColumnVisualStates();
+        ScheduleUpdateRowSelectionStates();
     }
 
     private void ApplyCurrentConfiguration()
     {
         UpdateCheckBoxColumn();
         UpdateFrozenColumns();
-        UpdateFilterVisibility();
-        ScheduleUpdateColumnHeaderStates();
+        ScheduleUpdateColumnVisualStates();
+        ScheduleUpdateRowSelectionStates();
     }
 
     private void UpdateCheckBoxColumn()
@@ -142,10 +136,6 @@ public sealed class EnecaDataGrid : DataGrid
             }
 
             EnsureCheckBoxColumnPosition();
-            if (SelectionMode == DataGridSelectionMode.Single)
-            {
-                SelectionMode = DataGridSelectionMode.Extended;
-            }
         }
         else if (_checkBoxColumn is not null)
         {
@@ -165,7 +155,7 @@ public sealed class EnecaDataGrid : DataGrid
         _checkBoxColumn.CanUserResize = false;
         _checkBoxColumn.Width = new DataGridLength(32);
         _checkBoxColumn.DisplayIndex = 0;
-        ScheduleUpdateColumnHeaderStates();
+        ScheduleUpdateColumnVisualStates();
     }
 
     private DataGridTemplateColumn CreateCheckBoxColumn()
@@ -183,10 +173,11 @@ public sealed class EnecaDataGrid : DataGrid
         var rowCheckBoxFactory = new FrameworkElementFactory(typeof(CheckBox));
         rowCheckBoxFactory.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
         rowCheckBoxFactory.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
-        rowCheckBoxFactory.SetBinding(ToggleButton.IsCheckedProperty, new Binding("IsSelected")
+        rowCheckBoxFactory.SetBinding(ToggleButton.IsCheckedProperty, new Binding
         {
             RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1),
-            Mode = BindingMode.TwoWay
+            Path = new PropertyPath("(0)", ColumnHeaderState.IsRowCheckBoxCheckedProperty),
+            Mode = BindingMode.OneWay
         });
 
         if (TryFindResource("EnecaDataGridCellCheckBoxStyle") is Style checkBoxStyle)
@@ -211,9 +202,44 @@ public sealed class EnecaDataGrid : DataGrid
             headerCheckBox.Style = style;
         }
 
-        headerCheckBox.Checked += (_, _) => SelectAll();
-        headerCheckBox.Unchecked += (_, _) => UnselectAll();
+        headerCheckBox.Checked += (_, _) => SetAllRowsSelected(true);
+        headerCheckBox.Unchecked += (_, _) => SetAllRowsSelected(false);
         return headerCheckBox;
+    }
+
+    private void SetAllRowsSelected(bool selected)
+    {
+        if (SelectionUnit != DataGridSelectionUnit.Cell)
+        {
+            if (selected)
+            {
+                SelectAll();
+            }
+            else
+            {
+                UnselectAll();
+            }
+
+            return;
+        }
+
+        if (selected)
+        {
+            SelectedCells.Clear();
+            foreach (var item in Items)
+            {
+                if (ReferenceEquals(item, CollectionView.NewItemPlaceholder))
+                {
+                    continue;
+                }
+
+                SelectAllVisibleCellsForItem(item);
+            }
+
+            return;
+        }
+
+        SelectedCells.Clear();
     }
 
     private void UpdateFrozenColumns()
@@ -228,63 +254,294 @@ public sealed class EnecaDataGrid : DataGrid
         FrozenColumnCount = Math.Min(target, Columns.Count);
     }
 
-    private void UpdateFilterVisibility()
+    private void ScheduleUpdateColumnVisualStates()
     {
-        var allowedIndices = ParseIndices(FilterColumnIndices);
-        var dataColumnIndex = 0;
-
-        foreach (var column in Columns)
-        {
-            if (ReferenceEquals(column, _checkBoxColumn))
-            {
-                continue;
-            }
-
-            if (column.Header is ColumnFilterViewModel filterViewModel)
-            {
-                filterViewModel.IsFilterVisible = allowedIndices.Contains(dataColumnIndex);
-            }
-
-            dataColumnIndex++;
-        }
+        Dispatcher.BeginInvoke(UpdateColumnVisualStates, DispatcherPriority.Loaded);
     }
 
-    private static HashSet<int> ParseIndices(string? value)
+    private void ScheduleUpdateRowSelectionStates()
     {
-        var result = new HashSet<int>();
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return result;
-        }
-
-        foreach (var chunk in value.Split(','))
-        {
-            if (int.TryParse(chunk.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed >= 0)
-            {
-                result.Add(parsed);
-            }
-        }
-
-        return result;
+        Dispatcher.BeginInvoke(UpdateRowSelectionStates, DispatcherPriority.Loaded);
     }
 
-    private void ScheduleUpdateColumnHeaderStates()
+    private void UpdateColumnVisualStates()
     {
-        Dispatcher.BeginInvoke(UpdateColumnHeaderStates, DispatcherPriority.Loaded);
-    }
-
-    private void UpdateColumnHeaderStates()
-    {
-        var lastDisplayIndex = Columns.Count - 1;
+        var lastDisplayIndex = GetLastVisibleDisplayIndex();
 
         foreach (var header in FindDescendants<DataGridColumnHeader>(this))
         {
-            var isCheckBoxHeader = ReferenceEquals(header.Column, _checkBoxColumn);
-            var hideRightSeparator = isCheckBoxHeader || header.Column?.DisplayIndex == lastDisplayIndex;
-
-            ColumnHeaderState.SetIsCheckBoxHeader(header, isCheckBoxHeader);
-            ColumnHeaderState.SetHideRightSeparator(header, hideRightSeparator);
+            UpdateHeaderVisualState(header, lastDisplayIndex);
         }
+
+        foreach (var cell in FindDescendants<DataGridCell>(this))
+        {
+            UpdateCellVisualState(cell, lastDisplayIndex);
+        }
+    }
+
+    private void UpdateRowSelectionStates()
+    {
+        foreach (var row in FindDescendants<DataGridRow>(this))
+        {
+            UpdateRowSelectionState(row);
+        }
+    }
+
+    private static void DataGridCellLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is DataGridCell cell && FindAncestor<EnecaDataGrid>(cell) is { } grid)
+        {
+            grid.UpdateCellVisualState(cell, grid.GetLastVisibleDisplayIndex());
+            if (FindAncestor<DataGridRow>(cell) is { } row)
+            {
+                grid.UpdateRowSelectionState(row);
+            }
+        }
+    }
+
+    private static void DataGridCellPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not DataGridCell cell || FindAncestor<EnecaDataGrid>(cell) is not { } grid)
+        {
+            return;
+        }
+
+        ColumnHeaderState.SetIsPressed(cell, true);
+
+        if (grid.SelectionUnit != DataGridSelectionUnit.Cell)
+        {
+            return;
+        }
+
+        if (ReferenceEquals(cell.Column, grid._checkBoxColumn))
+        {
+            return;
+        }
+
+        if (IsInteractiveContentHit(e.OriginalSource as DependencyObject, cell))
+        {
+            return;
+        }
+
+        if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+        {
+            return;
+        }
+
+        var cellInfo = new DataGridCellInfo(cell);
+        if (grid.SelectedCells.Count == 1 && grid.SelectedCells.Contains(cellInfo))
+        {
+            return;
+        }
+
+        grid.SelectedCells.Clear();
+        grid.SelectedCells.Add(cellInfo);
+        e.Handled = true;
+    }
+
+    private static void DataGridCellPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is DataGridCell cell)
+        {
+            ColumnHeaderState.SetIsPressed(cell, false);
+        }
+    }
+
+    private static void RowCheckBoxPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not CheckBox checkBox || FindAncestor<EnecaDataGrid>(checkBox) is not { } grid)
+        {
+            return;
+        }
+
+        var cell = FindAncestor<DataGridCell>(checkBox);
+        if (cell is null || !ReferenceEquals(cell.Column, grid._checkBoxColumn))
+        {
+            return;
+        }
+
+        e.Handled = true;
+
+        var row = FindAncestor<DataGridRow>(checkBox);
+        if (row is null)
+        {
+            return;
+        }
+
+        grid.SetRowSelected(row, !grid.IsItemFullySelected(row.Item));
+    }
+
+    private void SetRowSelected(DataGridRow row, bool selected)
+    {
+        if (SelectionUnit != DataGridSelectionUnit.Cell)
+        {
+            row.IsSelected = selected;
+            if (selected)
+            {
+                SelectedItem = row.Item;
+            }
+
+            ScheduleUpdateRowSelectionStates();
+            return;
+        }
+
+        var rowCells = Columns
+            .Where(column => column.Visibility == Visibility.Visible)
+            .Select(column => new DataGridCellInfo(row.Item, column))
+            .ToList();
+
+        if (selected)
+        {
+            foreach (var cellInfo in rowCells)
+            {
+                if (!SelectedCells.Contains(cellInfo))
+                {
+                    SelectedCells.Add(cellInfo);
+                }
+            }
+
+            ScheduleUpdateRowSelectionStates();
+            return;
+        }
+
+        foreach (var cellInfo in rowCells)
+        {
+            SelectedCells.Remove(cellInfo);
+        }
+
+        ScheduleUpdateRowSelectionStates();
+    }
+
+    private void SelectAllVisibleCellsForItem(object item)
+    {
+        foreach (var column in Columns.Where(column => column.Visibility == Visibility.Visible))
+        {
+            var cellInfo = new DataGridCellInfo(item, column);
+            if (!SelectedCells.Contains(cellInfo))
+            {
+                SelectedCells.Add(cellInfo);
+            }
+        }
+    }
+
+    private bool IsItemFullySelected(object item)
+    {
+        var visibleColumns = Columns.Where(column => column.Visibility == Visibility.Visible).ToList();
+        if (visibleColumns.Count == 0)
+        {
+            return false;
+        }
+
+        return visibleColumns.All(column => SelectedCells.Contains(new DataGridCellInfo(item, column)));
+    }
+
+    private void UpdateRowSelectionState(DataGridRow row)
+    {
+        var isChecked = SelectionUnit == DataGridSelectionUnit.Cell
+            ? row.Item is not null && IsItemFullySelected(row.Item)
+            : row.IsSelected;
+
+        ColumnHeaderState.SetIsRowCheckBoxChecked(row, isChecked);
+    }
+
+    private static void DataGridColumnHeaderLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is DataGridColumnHeader header && FindAncestor<EnecaDataGrid>(header) is { } grid)
+        {
+            var lastDisplayIndex = grid.GetLastVisibleDisplayIndex();
+            grid.UpdateHeaderVisualState(header, lastDisplayIndex);
+        }
+    }
+
+    private void UpdateHeaderVisualState(DataGridColumnHeader header, int lastDisplayIndex)
+    {
+        if (header.Column is null)
+        {
+            header.Visibility = Visibility.Collapsed;
+            ColumnHeaderState.SetIsFilterVisible(header, false);
+            return;
+        }
+
+        header.Visibility = Visibility.Visible;
+
+        var isCheckBoxHeader = ReferenceEquals(header.Column, _checkBoxColumn);
+        var hideRightSeparator = isCheckBoxHeader || IsLastVisibleColumn(header.Column, lastDisplayIndex);
+        var isFilterVisible = !isCheckBoxHeader
+            && header.Column.Header is ColumnFilterViewModel
+            && GetColumnFilterVisibility(header.Column);
+
+        ColumnHeaderState.SetIsCheckBoxHeader(header, isCheckBoxHeader);
+        ColumnHeaderState.SetHideRightSeparator(header, hideRightSeparator);
+        ColumnHeaderState.SetIsFilterVisible(header, isFilterVisible);
+    }
+
+    private static bool GetColumnFilterVisibility(DataGridColumn column)
+    {
+        if (column is IFilterVisibilityColumn filterVisibilityColumn)
+        {
+            return filterVisibilityColumn.IsFilterVisible;
+        }
+
+        return ColumnHeaderState.GetIsFilterVisible(column);
+    }
+
+    private void UpdateCellVisualState(DataGridCell cell, int lastDisplayIndex)
+    {
+        var hideRightSeparator = ReferenceEquals(cell.Column, _checkBoxColumn)
+            || IsLastVisibleColumn(cell.Column, lastDisplayIndex);
+        ColumnHeaderState.SetHideRightSeparator(cell, hideRightSeparator);
+    }
+
+    private int GetLastVisibleDisplayIndex()
+    {
+        return Columns
+            .Where(column => column.Visibility == Visibility.Visible)
+            .Select(column => column.DisplayIndex)
+            .DefaultIfEmpty(-1)
+            .Max();
+    }
+
+    private static bool IsLastVisibleColumn(DataGridColumn? column, int lastDisplayIndex)
+    {
+        return column is not null
+            && column.Visibility == Visibility.Visible
+            && column.DisplayIndex == lastDisplayIndex;
+    }
+
+    private static T? FindAncestor<T>(DependencyObject current)
+        where T : DependencyObject
+    {
+        var parent = VisualTreeHelper.GetParent(current);
+        while (parent is not null)
+        {
+            if (parent is T match)
+            {
+                return match;
+            }
+
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+
+        return null;
+    }
+
+    private static bool IsInteractiveContentHit(DependencyObject? originalSource, DataGridCell ownerCell)
+    {
+        var current = originalSource;
+        while (current is not null && !ReferenceEquals(current, ownerCell))
+        {
+            if (current is ButtonBase
+                || current is TextBoxBase
+                || current is Selector
+                || current is DatePicker)
+            {
+                return true;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return false;
     }
 
     private static IEnumerable<T> FindDescendants<T>(DependencyObject current)

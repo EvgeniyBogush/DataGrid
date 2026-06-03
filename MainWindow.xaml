@@ -59,16 +59,12 @@
         </Border>
 
         <grid:EnecaDataGrid
-            x:Name="OrdersGrid"
-            Margin="16"
             CellVisualStateMode="Interactive"
             EnableHeaderSelection="True"
-            FilterColumnIndices="2,3"
             FirstColumnIsCheckBoxColumn="True"
             FreezeFirstColumn="True"
-            IsReadOnly="{Binding IsGridReadOnly}"
             ItemsSource="{Binding OrdersView}"
-            SelectedItem="{Binding SelectedOrder, Mode=TwoWay}"
+            SelectedItem="{Binding SelectedOrder, Mode=OneWayToSource}"
             Style="{StaticResource EnecaDataGridStyle}">
             <grid:EnecaDataGrid.ContextMenu>
                 <ContextMenu>
@@ -79,48 +75,57 @@
 
             <grid:EnecaDataGrid.Columns>
                 <DataGridTextColumn
-                    Width="90"
+                    Width="100"
                     Binding="{Binding OrderId}"
                     Header="{Binding Data.OrderIdFilter, Source={StaticResource VmProxy}}"
                     IsReadOnly="True" />
                 <DataGridTextColumn
-                    Width="180"
+                    grid:ColumnHeaderState.IsFilterVisible="True"
+                    Width="220"
                     Binding="{Binding Customer, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
                     Header="{Binding Data.CustomerFilter, Source={StaticResource VmProxy}}" />
-                <DataGridTextColumn
-                    Width="140"
-                    Binding="{Binding City, UpdateSourceTrigger=PropertyChanged}"
-                    Header="{Binding Data.CityFilter, Source={StaticResource VmProxy}}" />
-                <DataGridTextColumn
-                    Width="130"
-                    Binding="{Binding Status, UpdateSourceTrigger=PropertyChanged}"
-                    Header="{Binding Data.StatusFilter, Source={StaticResource VmProxy}}" />
-                <DataGridTextColumn
-                    Width="120"
-                    Binding="{Binding DueDate, StringFormat=d, UpdateSourceTrigger=PropertyChanged}"
-                    Header="{Binding Data.DueDateFilter, Source={StaticResource VmProxy}}" />
-                <DataGridTextColumn
-                    Width="120"
-                    Binding="{Binding Amount, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
-                    Header="{Binding Data.AmountFilter, Source={StaticResource VmProxy}}" />
-                <DataGridCheckBoxColumn
-                    Width="90"
-                    Binding="{Binding IsActive, UpdateSourceTrigger=PropertyChanged}"
-                    Header="{Binding Data.ActiveFilter, Source={StaticResource VmProxy}}" />
                 <DataGridTemplateColumn
                     Width="180"
-                    Header="{Binding Data.ValidationFilter, Source={StaticResource VmProxy}}"
-                    IsReadOnly="True">
+                    Header="{Binding Data.CityFilter, Source={StaticResource VmProxy}}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource GridErrorBrush}"
-                                Text="{Binding ValidationMessage}"
-                                TextTrimming="CharacterEllipsis" />
+                            <Button
+                                Padding="8,2"
+                                HorizontalAlignment="Stretch"
+                                Command="{Binding Data.PromoteOrderCommand, Source={StaticResource VmProxy}}"
+                                CommandParameter="{Binding}"
+                                Content="{Binding City}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <DataGridTemplateColumn
+                    grid:ColumnHeaderState.IsFilterVisible="True"
+                    Width="160"
+                    Header="{Binding Data.StatusFilter, Source={StaticResource VmProxy}}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox
+                                HorizontalAlignment="Stretch"
+                                ItemsSource="{Binding Data.StatusOptions, Source={StaticResource VmProxy}}"
+                                SelectedItem="{Binding Status, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn
+                    Width="150"
+                    Header="{Binding Data.DueDateFilter, Source={StaticResource VmProxy}}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <DatePicker
+                                HorizontalAlignment="Stretch"
+                                SelectedDate="{Binding DueDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn
+                    Width="150"
+                    Binding="{Binding Amount, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                    Header="{Binding Data.AmountFilter, Source={StaticResource VmProxy}}" />
             </grid:EnecaDataGrid.Columns>
         </grid:EnecaDataGrid>
     </DockPanel>

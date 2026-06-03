@@ -8,6 +8,7 @@ namespace EnecaDataGrid;
 
 public sealed class MainWindowViewModel : NotifyObject
 {
+    private static readonly string[] AvailableStatuses = ["New", "In progress", "On hold", "Done", "Priority"];
     private string _filterText = string.Empty;
     private OrderRow? _selectedOrder;
     private bool _isEditingEnabled = true;
@@ -35,6 +36,7 @@ public sealed class MainWindowViewModel : NotifyObject
         DuplicateSelectedCommand = new RelayCommand(DuplicateSelected, () => SelectedOrder is not null);
         DeleteSelectedCommand = new RelayCommand(DeleteSelected, () => SelectedOrder is not null);
         ToggleReadOnlyCommand = new RelayCommand(() => IsEditingEnabled = !IsEditingEnabled);
+        PromoteOrderCommand = new RelayCommand(PromoteOrder);
     }
 
     public ObservableCollection<OrderRow> Orders { get; }
@@ -62,6 +64,10 @@ public sealed class MainWindowViewModel : NotifyObject
     public ICommand DeleteSelectedCommand { get; }
 
     public ICommand ToggleReadOnlyCommand { get; }
+
+    public ICommand PromoteOrderCommand { get; }
+
+    public IReadOnlyList<string> StatusOptions => AvailableStatuses;
 
     public string FilterText
     {
@@ -202,6 +208,17 @@ public sealed class MainWindowViewModel : NotifyObject
         var index = Orders.IndexOf(SelectedOrder);
         Orders.Remove(SelectedOrder);
         SelectedOrder = Orders.Count == 0 ? null : Orders[Math.Clamp(index, 0, Orders.Count - 1)];
+    }
+
+    private void PromoteOrder(object? parameter)
+    {
+        if (parameter is not OrderRow row)
+        {
+            return;
+        }
+
+        row.Status = "Priority";
+        SelectedOrder = row;
     }
 
     private void OrdersCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

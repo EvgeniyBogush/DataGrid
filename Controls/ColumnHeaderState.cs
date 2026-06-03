@@ -32,6 +32,20 @@ public static class ColumnHeaderState
             typeof(ColumnHeaderState),
             new PropertyMetadata(false));
 
+    public static readonly DependencyProperty IsRowCheckBoxCheckedProperty =
+        DependencyProperty.RegisterAttached(
+            "IsRowCheckBoxChecked",
+            typeof(bool),
+            typeof(ColumnHeaderState),
+            new PropertyMetadata(false));
+
+    public static readonly DependencyProperty IsFilterVisibleProperty =
+        DependencyProperty.RegisterAttached(
+            "IsFilterVisible",
+            typeof(bool),
+            typeof(ColumnHeaderState),
+            new PropertyMetadata(false));
+
     public static bool GetIsPressed(DependencyObject obj)
     {
         return (bool)obj.GetValue(IsPressedProperty);
@@ -70,5 +84,25 @@ public static class ColumnHeaderState
     public static void SetHideRightSeparator(DependencyObject obj, bool value)
     {
         obj.SetValue(HideRightSeparatorProperty, value);
+    }
+
+    public static bool GetIsRowCheckBoxChecked(DependencyObject obj)
+    {
+        return (bool)obj.GetValue(IsRowCheckBoxCheckedProperty);
+    }
+
+    public static void SetIsRowCheckBoxChecked(DependencyObject obj, bool value)
+    {
+        obj.SetValue(IsRowCheckBoxCheckedProperty, value);
+    }
+
+    public static bool GetIsFilterVisible(DependencyObject obj)
+    {
+        return (bool)obj.GetValue(IsFilterVisibleProperty);
+    }
+
+    public static void SetIsFilterVisible(DependencyObject obj, bool value)
+    {
+        obj.SetValue(IsFilterVisibleProperty, value);
     }
 }
