@@ -7,8 +7,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Icons/Filter.xaml" />
                 <ResourceDictionary Source="Icons/WideHorizontal.xaml" />
-                <ResourceDictionary Source="Styles/DataGridStyles.xaml" />
-                <ResourceDictionary Source="Styles/CustomDataGridStyles.xaml" />
+                <ResourceDictionary Source="Styles/EnecaDataGridStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -13,16 +12,13 @@ public sealed class ColumnFilterViewModel : NotifyObject
     private string _searchText = string.Empty;
     private bool _isPopupOpen;
     private bool _isBulkUpdating;
-    private bool _isFilterVisible = true;
 
     public ColumnFilterViewModel(
         string title,
-        string propertyName,
         Func<OrderRow, string> valueSelector,
         Action filterChanged)
     {
         Title = title;
-        PropertyName = propertyName;
         _valueSelector = valueSelector;
         _filterChanged = filterChanged;
 
@@ -34,8 +30,6 @@ public sealed class ColumnFilterViewModel : NotifyObject
     }
 
     public string Title { get; }
-
-    public string PropertyName { get; }
 
     public ObservableCollection<FilterOptionViewModel> Options { get; } = new();
 
@@ -62,20 +56,6 @@ public sealed class ColumnFilterViewModel : NotifyObject
         get => _isPopupOpen;
         set => SetProperty(ref _isPopupOpen, value);
     }
-
-    public bool IsFilterVisible
-    {
-        get => _isFilterVisible;
-        set
-        {
-            if (SetProperty(ref _isFilterVisible, value))
-            {
-                OnPropertyChanged(nameof(FilterVisibility));
-            }
-        }
-    }
-
-    public Visibility FilterVisibility => IsFilterVisible ? Visibility.Visible : Visibility.Collapsed;
 
     public string FilterSummary
     {
@@ -107,12 +87,6 @@ public sealed class ColumnFilterViewModel : NotifyObject
 
         NotifyFilterChanged();
         OptionsView.Refresh();
-    }
-
-    public void SetOnlySelectedValues(params string[] values)
-    {
-        var allowed = values.ToHashSet(StringComparer.Ordinal);
-        UpdateSelections(option => allowed.Contains(option.Value));
     }
 
     private void UpdateSelections(Func<FilterOptionViewModel, bool> resolveSelection)

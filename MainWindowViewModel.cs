@@ -8,24 +8,24 @@ namespace EnecaDataGrid;
 
 public sealed class MainWindowViewModel : NotifyObject
 {
-    private static readonly string[] AvailableStatuses = ["New", "In progress", "On hold", "Done", "Priority"];
+    private readonly string[] _availableStatuses = ["New", "In progress", "On hold", "Done", "Priority"];
     private string _filterText = string.Empty;
     private OrderRow? _selectedOrder;
     private bool _isEditingEnabled = true;
 
     public MainWindowViewModel()
     {
-        Orders = new ObservableCollection<OrderRow>(OrderRows.CreateSample());
+        Orders = new ObservableCollection<OrderRow>(new OrderRows().CreateSample());
         OrdersView = CollectionViewSource.GetDefaultView(Orders);
 
-        OrderIdFilter = new ColumnFilterViewModel("Order", nameof(OrderRow.OrderId), row => row.OrderId.ToString(), RefreshFilteredRows);
-        CustomerFilter = new ColumnFilterViewModel("Customer", nameof(OrderRow.Customer), row => row.Customer, RefreshFilteredRows);
-        CityFilter = new ColumnFilterViewModel("City", nameof(OrderRow.City), row => row.City, RefreshFilteredRows);
-        StatusFilter = new ColumnFilterViewModel("Status", nameof(OrderRow.Status), row => row.Status, RefreshFilteredRows);
-        DueDateFilter = new ColumnFilterViewModel("Due date", nameof(OrderRow.DueDate), row => row.DueDate.ToShortDateString(), RefreshFilteredRows);
-        AmountFilter = new ColumnFilterViewModel("Amount", nameof(OrderRow.Amount), row => row.Amount.ToString("N2"), RefreshFilteredRows);
-        ActiveFilter = new ColumnFilterViewModel("Active", nameof(OrderRow.IsActive), row => row.IsActive ? "Yes" : "No", RefreshFilteredRows);
-        ValidationFilter = new ColumnFilterViewModel("Validation", nameof(OrderRow.ValidationMessage), row => row.ValidationMessage, RefreshFilteredRows);
+        OrderIdFilter = new ColumnFilterViewModel("Order", row => row.OrderId.ToString(), RefreshFilteredRows);
+        CustomerFilter = new ColumnFilterViewModel("Customer", row => row.Customer, RefreshFilteredRows);
+        CityFilter = new ColumnFilterViewModel("City", row => row.City, RefreshFilteredRows);
+        StatusFilter = new ColumnFilterViewModel("Status", row => row.Status, RefreshFilteredRows);
+        DueDateFilter = new ColumnFilterViewModel("Due date", row => row.DueDate.ToShortDateString(), RefreshFilteredRows);
+        AmountFilter = new ColumnFilterViewModel("Amount", row => row.Amount.ToString("N2"), RefreshFilteredRows);
+        ActiveFilter = new ColumnFilterViewModel("Active", row => row.IsActive ? "Yes" : "No", RefreshFilteredRows);
+        ValidationFilter = new ColumnFilterViewModel("Validation", row => row.ValidationMessage, RefreshFilteredRows);
 
         Orders.CollectionChanged += OrdersCollectionChanged;
         RebuildColumnFilterOptions();
@@ -35,7 +35,7 @@ public sealed class MainWindowViewModel : NotifyObject
 
         DuplicateSelectedCommand = new RelayCommand(DuplicateSelected, () => SelectedOrder is not null);
         DeleteSelectedCommand = new RelayCommand(DeleteSelected, () => SelectedOrder is not null);
-        ToggleReadOnlyCommand = new RelayCommand(() => IsEditingEnabled = !IsEditingEnabled);
+        ToggleReadOnlyCommand = new RelayCommand(ToggleEditingMode);
         PromoteOrderCommand = new RelayCommand(PromoteOrder);
     }
 
@@ -67,7 +67,7 @@ public sealed class MainWindowViewModel : NotifyObject
 
     public ICommand PromoteOrderCommand { get; }
 
-    public IReadOnlyList<string> StatusOptions => AvailableStatuses;
+    public IReadOnlyList<string> StatusOptions => _availableStatuses;
 
     public string FilterText
     {
@@ -89,27 +89,20 @@ public sealed class MainWindowViewModel : NotifyObject
             if (SetProperty(ref _selectedOrder, value))
             {
                 OnPropertyChanged(nameof(SelectedOrderSummary));
-                RelayCommand.RaiseCanExecuteChanged(DuplicateSelectedCommand, DeleteSelectedCommand);
+                if (DuplicateSelectedCommand is RelayCommand duplicateCommand)
+                {
+                    duplicateCommand.RaiseCanExecuteChanged();
+                }
+
+                if (DeleteSelectedCommand is RelayCommand deleteCommand)
+                {
+                    deleteCommand.RaiseCanExecuteChanged();
+                }
             }
         }
     }
 
-    public bool IsEditingEnabled
-    {
-        get => _isEditingEnabled;
-        set
-        {
-            if (SetProperty(ref _isEditingEnabled, value))
-            {
-                OnPropertyChanged(nameof(IsGridReadOnly));
-                OnPropertyChanged(nameof(EditModeButtonText));
-            }
-        }
-    }
-
-    public bool IsGridReadOnly => !IsEditingEnabled;
-
-    public string EditModeButtonText => IsEditingEnabled ? "Switch to read-only" : "Enable editing";
+    public string EditModeButtonText => _isEditingEnabled ? "Switch to read-only" : "Enable editing";
 
     public string SelectedOrderSummary =>
         SelectedOrder is null
@@ -219,6 +212,12 @@ public sealed class MainWindowViewModel : NotifyObject
 
         row.Status = "Priority";
         SelectedOrder = row;
+    }
+
+    private void ToggleEditingMode()
+    {
+        _isEditingEnabled = !_isEditingEnabled;
+        OnPropertyChanged(nameof(EditModeButtonText));
     }
 
     private void OrdersCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

@@ -24,11 +24,8 @@ public sealed class RelayCommand : ICommand
 
     public void Execute(object? parameter) => _execute(parameter);
 
-    public static void RaiseCanExecuteChanged(params ICommand[] commands)
+    public void RaiseCanExecuteChanged()
     {
-        foreach (var command in commands.OfType<RelayCommand>())
-        {
-            command.CanExecuteChanged?.Invoke(command, EventArgs.Empty);
-        }
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

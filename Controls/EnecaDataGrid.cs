@@ -12,18 +12,22 @@ namespace EnecaDataGrid.Controls;
 public sealed class EnecaDataGrid : DataGrid
 {
     private DataGridTemplateColumn? _checkBoxColumn;
-
-    static EnecaDataGrid()
-    {
-        EventManager.RegisterClassHandler(typeof(DataGridCell), LoadedEvent, new RoutedEventHandler(DataGridCellLoaded));
-        EventManager.RegisterClassHandler(typeof(DataGridColumnHeader), LoadedEvent, new RoutedEventHandler(DataGridColumnHeaderLoaded));
-        EventManager.RegisterClassHandler(typeof(DataGridCell), PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(DataGridCellPreviewMouseLeftButtonDown), true);
-        EventManager.RegisterClassHandler(typeof(DataGridCell), PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(DataGridCellPreviewMouseLeftButtonUp), true);
-        EventManager.RegisterClassHandler(typeof(CheckBox), PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(RowCheckBoxPreviewMouseLeftButtonDown), true);
-    }
+    private bool _firstColumnIsCheckBoxColumn;
+    private bool _freezeFirstColumn;
+    private bool _enableHeaderSelection = true;
+    private CellVisualStateMode _cellVisualStateMode = CellVisualStateMode.Interactive;
 
     public EnecaDataGrid()
     {
+        AddHandler(DataGridCell.LoadedEvent, new RoutedEventHandler(DataGridCellLoaded), true);
+        AddHandler(DataGridColumnHeader.LoadedEvent, new RoutedEventHandler(DataGridColumnHeaderLoaded), true);
+        AddHandler(DataGridColumnHeader.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(DataGridColumnHeaderPreviewMouseLeftButtonDown), true);
+        AddHandler(DataGridColumnHeader.PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(DataGridColumnHeaderPreviewMouseLeftButtonUp), true);
+        AddHandler(DataGridColumnHeader.MouseLeaveEvent, new MouseEventHandler(DataGridColumnHeaderMouseLeave), true);
+        AddHandler(DataGridCell.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(DataGridCellPreviewMouseLeftButtonDown), true);
+        AddHandler(DataGridCell.PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(DataGridCellPreviewMouseLeftButtonUp), true);
+        AddHandler(CheckBox.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(RowCheckBoxPreviewMouseLeftButtonDown), true);
+
         Loaded += (_, _) => ApplyCurrentConfiguration();
         Columns.CollectionChanged += ColumnsCollectionChanged;
         LoadingRow += (_, e) =>
@@ -40,86 +44,222 @@ public sealed class EnecaDataGrid : DataGrid
         };
     }
 
-    public static readonly DependencyProperty FirstColumnIsCheckBoxColumnProperty =
-        DependencyProperty.Register(
-            nameof(FirstColumnIsCheckBoxColumn),
+    public static readonly DependencyProperty IsPressedProperty =
+        DependencyProperty.RegisterAttached(
+            "IsPressed",
             typeof(bool),
             typeof(EnecaDataGrid),
-            new PropertyMetadata(false, OnFirstColumnIsCheckBoxColumnChanged));
+            new PropertyMetadata(false));
 
-    public static readonly DependencyProperty FreezeFirstColumnProperty =
-        DependencyProperty.Register(
-            nameof(FreezeFirstColumn),
+    public static readonly DependencyProperty IsClickedProperty =
+        DependencyProperty.RegisterAttached(
+            "IsClicked",
             typeof(bool),
             typeof(EnecaDataGrid),
-            new PropertyMetadata(false, OnFreezeFirstColumnChanged));
+            new PropertyMetadata(false));
 
-    public static readonly DependencyProperty EnableHeaderSelectionProperty =
-        DependencyProperty.Register(
-            nameof(EnableHeaderSelection),
+    public static readonly DependencyProperty IsCheckBoxHeaderProperty =
+        DependencyProperty.RegisterAttached(
+            "IsCheckBoxHeader",
             typeof(bool),
             typeof(EnecaDataGrid),
-            new PropertyMetadata(true));
+            new PropertyMetadata(false));
 
-    public static readonly DependencyProperty CellVisualStateModeProperty =
-        DependencyProperty.Register(
-            nameof(CellVisualStateMode),
-            typeof(CellVisualStateMode),
+    public static readonly DependencyProperty HideRightSeparatorProperty =
+        DependencyProperty.RegisterAttached(
+            "HideRightSeparator",
+            typeof(bool),
             typeof(EnecaDataGrid),
-            new PropertyMetadata(CellVisualStateMode.Interactive));
+            new PropertyMetadata(false));
+
+    public static readonly DependencyProperty IsRowCheckBoxCheckedProperty =
+        DependencyProperty.RegisterAttached(
+            "IsRowCheckBoxChecked",
+            typeof(bool),
+            typeof(EnecaDataGrid),
+            new PropertyMetadata(false));
+
+    public static readonly DependencyProperty IsFilterVisibleProperty =
+        DependencyProperty.RegisterAttached(
+            "IsFilterVisible",
+            typeof(bool),
+            typeof(EnecaDataGrid),
+            new PropertyMetadata(false));
+
+    public static readonly DependencyProperty ResizeThumbIconIsEnabledProperty =
+        DependencyProperty.RegisterAttached(
+            "ResizeThumbIconIsEnabled",
+            typeof(bool),
+            typeof(EnecaDataGrid),
+            new PropertyMetadata(false, OnResizeThumbIconIsEnabledChanged));
+
+    public static readonly DependencyProperty ResizeThumbIconSourceProperty =
+        DependencyProperty.RegisterAttached(
+            "ResizeThumbIconSource",
+            typeof(ImageSource),
+            typeof(EnecaDataGrid),
+            new PropertyMetadata(null, OnResizeThumbIconSourceChanged));
+
+    private static readonly DependencyProperty ResizeThumbIconStateProperty =
+        DependencyProperty.RegisterAttached(
+            "ResizeThumbIconState",
+            typeof(ResizeThumbIconState),
+            typeof(EnecaDataGrid),
+            new PropertyMetadata(null));
 
     public bool FirstColumnIsCheckBoxColumn
     {
-        get => (bool)GetValue(FirstColumnIsCheckBoxColumnProperty);
-        set => SetValue(FirstColumnIsCheckBoxColumnProperty, value);
+        get => _firstColumnIsCheckBoxColumn;
+        set
+        {
+            if (_firstColumnIsCheckBoxColumn == value)
+            {
+                return;
+            }
+
+            _firstColumnIsCheckBoxColumn = value;
+            UpdateCheckBoxColumn();
+            UpdateFrozenColumns();
+        }
     }
 
     public bool FreezeFirstColumn
     {
-        get => (bool)GetValue(FreezeFirstColumnProperty);
-        set => SetValue(FreezeFirstColumnProperty, value);
+        get => _freezeFirstColumn;
+        set
+        {
+            if (_freezeFirstColumn == value)
+            {
+                return;
+            }
+
+            _freezeFirstColumn = value;
+            UpdateFrozenColumns();
+        }
     }
 
     public bool EnableHeaderSelection
     {
-        get => (bool)GetValue(EnableHeaderSelectionProperty);
-        set => SetValue(EnableHeaderSelectionProperty, value);
+        get => _enableHeaderSelection;
+        set => _enableHeaderSelection = value;
     }
 
     public CellVisualStateMode CellVisualStateMode
     {
-        get => (CellVisualStateMode)GetValue(CellVisualStateModeProperty);
-        set => SetValue(CellVisualStateModeProperty, value);
-    }
-
-    private static void OnFirstColumnIsCheckBoxColumnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is EnecaDataGrid grid)
+        get => _cellVisualStateMode;
+        set
         {
-            grid.UpdateCheckBoxColumn();
-            grid.UpdateFrozenColumns();
+            if (_cellVisualStateMode == value)
+            {
+                return;
+            }
+
+            _cellVisualStateMode = value;
+            ScheduleUpdateColumnVisualStates();
         }
     }
 
-    private static void OnFreezeFirstColumnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    public static bool GetIsPressed(DependencyObject obj)
     {
-        if (d is EnecaDataGrid grid)
-        {
-            grid.UpdateFrozenColumns();
-        }
+        return (bool)obj.GetValue(IsPressedProperty);
     }
 
-    private void ColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    public static void SetIsPressed(DependencyObject obj, bool value)
     {
-        EnsureCheckBoxColumnPosition();
-        UpdateFrozenColumns();
-        ScheduleUpdateColumnVisualStates();
-        ScheduleUpdateRowSelectionStates();
+        obj.SetValue(IsPressedProperty, value);
+    }
+
+    public static bool GetIsClicked(DependencyObject obj)
+    {
+        return (bool)obj.GetValue(IsClickedProperty);
+    }
+
+    public static void SetIsClicked(DependencyObject obj, bool value)
+    {
+        obj.SetValue(IsClickedProperty, value);
+    }
+
+    public static bool GetIsCheckBoxHeader(DependencyObject obj)
+    {
+        return (bool)obj.GetValue(IsCheckBoxHeaderProperty);
+    }
+
+    public static void SetIsCheckBoxHeader(DependencyObject obj, bool value)
+    {
+        obj.SetValue(IsCheckBoxHeaderProperty, value);
+    }
+
+    public static bool GetHideRightSeparator(DependencyObject obj)
+    {
+        return (bool)obj.GetValue(HideRightSeparatorProperty);
+    }
+
+    public static void SetHideRightSeparator(DependencyObject obj, bool value)
+    {
+        obj.SetValue(HideRightSeparatorProperty, value);
+    }
+
+    public static bool GetIsRowCheckBoxChecked(DependencyObject obj)
+    {
+        return (bool)obj.GetValue(IsRowCheckBoxCheckedProperty);
+    }
+
+    public static void SetIsRowCheckBoxChecked(DependencyObject obj, bool value)
+    {
+        obj.SetValue(IsRowCheckBoxCheckedProperty, value);
+    }
+
+    public static bool GetIsFilterVisible(DependencyObject obj)
+    {
+        return (bool)obj.GetValue(IsFilterVisibleProperty);
+    }
+
+    public static void SetIsFilterVisible(DependencyObject obj, bool value)
+    {
+        obj.SetValue(IsFilterVisibleProperty, value);
+    }
+
+    public static bool GetResizeThumbIconIsEnabled(DependencyObject obj)
+    {
+        return (bool)obj.GetValue(ResizeThumbIconIsEnabledProperty);
+    }
+
+    public static void SetResizeThumbIconIsEnabled(DependencyObject obj, bool value)
+    {
+        obj.SetValue(ResizeThumbIconIsEnabledProperty, value);
+    }
+
+    public static ImageSource? GetResizeThumbIconSource(DependencyObject obj)
+    {
+        return (ImageSource?)obj.GetValue(ResizeThumbIconSourceProperty);
+    }
+
+    public static void SetResizeThumbIconSource(DependencyObject obj, ImageSource? value)
+    {
+        obj.SetValue(ResizeThumbIconSourceProperty, value);
+    }
+
+    private static ResizeThumbIconState? GetResizeThumbIconState(DependencyObject obj)
+    {
+        return (ResizeThumbIconState?)obj.GetValue(ResizeThumbIconStateProperty);
+    }
+
+    private static void SetResizeThumbIconState(DependencyObject obj, ResizeThumbIconState? value)
+    {
+        obj.SetValue(ResizeThumbIconStateProperty, value);
     }
 
     private void ApplyCurrentConfiguration()
     {
         UpdateCheckBoxColumn();
+        UpdateFrozenColumns();
+        ScheduleUpdateColumnVisualStates();
+        ScheduleUpdateRowSelectionStates();
+    }
+
+    private void ColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        EnsureCheckBoxColumnPosition();
         UpdateFrozenColumns();
         ScheduleUpdateColumnVisualStates();
         ScheduleUpdateRowSelectionStates();
@@ -176,7 +316,7 @@ public sealed class EnecaDataGrid : DataGrid
         rowCheckBoxFactory.SetBinding(ToggleButton.IsCheckedProperty, new Binding
         {
             RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1),
-            Path = new PropertyPath("(0)", ColumnHeaderState.IsRowCheckBoxCheckedProperty),
+            Path = new PropertyPath("(0)", IsRowCheckBoxCheckedProperty),
             Mode = BindingMode.OneWay
         });
 
@@ -287,33 +427,35 @@ public sealed class EnecaDataGrid : DataGrid
         }
     }
 
-    private static void DataGridCellLoaded(object sender, RoutedEventArgs e)
+    private void DataGridCellLoaded(object sender, RoutedEventArgs e)
     {
-        if (sender is DataGridCell cell && FindAncestor<EnecaDataGrid>(cell) is { } grid)
+        if (e.OriginalSource is not DependencyObject source || FindAncestor<DataGridCell>(source) is not { } cell)
         {
-            grid.UpdateCellVisualState(cell, grid.GetLastVisibleDisplayIndex());
-            if (FindAncestor<DataGridRow>(cell) is { } row)
-            {
-                grid.UpdateRowSelectionState(row);
-            }
+            return;
+        }
+
+        UpdateCellVisualState(cell, GetLastVisibleDisplayIndex());
+        if (FindAncestor<DataGridRow>(cell) is { } row)
+        {
+            UpdateRowSelectionState(row);
         }
     }
 
-    private static void DataGridCellPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void DataGridCellPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (sender is not DataGridCell cell || FindAncestor<EnecaDataGrid>(cell) is not { } grid)
+        if (e.OriginalSource is not DependencyObject source || FindAncestor<DataGridCell>(source) is not { } cell)
         {
             return;
         }
 
-        ColumnHeaderState.SetIsPressed(cell, true);
+        SetIsPressed(cell, true);
 
-        if (grid.SelectionUnit != DataGridSelectionUnit.Cell)
+        if (SelectionUnit != DataGridSelectionUnit.Cell)
         {
             return;
         }
 
-        if (ReferenceEquals(cell.Column, grid._checkBoxColumn))
+        if (ReferenceEquals(cell.Column, _checkBoxColumn))
         {
             return;
         }
@@ -329,33 +471,35 @@ public sealed class EnecaDataGrid : DataGrid
         }
 
         var cellInfo = new DataGridCellInfo(cell);
-        if (grid.SelectedCells.Count == 1 && grid.SelectedCells.Contains(cellInfo))
+        if (SelectedCells.Count == 1 && SelectedCells.Contains(cellInfo))
         {
             return;
         }
 
-        grid.SelectedCells.Clear();
-        grid.SelectedCells.Add(cellInfo);
+        SelectedCells.Clear();
+        SelectedCells.Add(cellInfo);
         e.Handled = true;
     }
 
-    private static void DataGridCellPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void DataGridCellPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        if (sender is DataGridCell cell)
+        if (e.OriginalSource is not DependencyObject source || FindAncestor<DataGridCell>(source) is not { } cell)
         {
-            ColumnHeaderState.SetIsPressed(cell, false);
+            return;
         }
+
+        SetIsPressed(cell, false);
     }
 
-    private static void RowCheckBoxPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void RowCheckBoxPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (sender is not CheckBox checkBox || FindAncestor<EnecaDataGrid>(checkBox) is not { } grid)
+        if (e.OriginalSource is not DependencyObject source || FindAncestor<CheckBox>(source) is not { } checkBox)
         {
             return;
         }
 
         var cell = FindAncestor<DataGridCell>(checkBox);
-        if (cell is null || !ReferenceEquals(cell.Column, grid._checkBoxColumn))
+        if (cell is null || !ReferenceEquals(cell.Column, _checkBoxColumn))
         {
             return;
         }
@@ -368,7 +512,7 @@ public sealed class EnecaDataGrid : DataGrid
             return;
         }
 
-        grid.SetRowSelected(row, !grid.IsItemFullySelected(row.Item));
+        SetRowSelected(row, !IsItemFullySelected(row.Item));
     }
 
     private void SetRowSelected(DataGridRow row, bool selected)
@@ -441,16 +585,51 @@ public sealed class EnecaDataGrid : DataGrid
             ? row.Item is not null && IsItemFullySelected(row.Item)
             : row.IsSelected;
 
-        ColumnHeaderState.SetIsRowCheckBoxChecked(row, isChecked);
+        SetIsRowCheckBoxChecked(row, isChecked);
     }
 
-    private static void DataGridColumnHeaderLoaded(object sender, RoutedEventArgs e)
+    private void DataGridColumnHeaderLoaded(object sender, RoutedEventArgs e)
     {
-        if (sender is DataGridColumnHeader header && FindAncestor<EnecaDataGrid>(header) is { } grid)
+        if (e.OriginalSource is not DependencyObject source || FindAncestor<DataGridColumnHeader>(source) is not { } header)
         {
-            var lastDisplayIndex = grid.GetLastVisibleDisplayIndex();
-            grid.UpdateHeaderVisualState(header, lastDisplayIndex);
+            return;
         }
+
+        var lastDisplayIndex = GetLastVisibleDisplayIndex();
+        UpdateHeaderVisualState(header, lastDisplayIndex);
+    }
+
+    private void DataGridColumnHeaderPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is not DependencyObject source || FindAncestor<DataGridColumnHeader>(source) is not { } header)
+        {
+            return;
+        }
+
+        SetIsPressed(header, true);
+        SetIsClicked(header, false);
+    }
+
+    private void DataGridColumnHeaderPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is not DependencyObject source || FindAncestor<DataGridColumnHeader>(source) is not { } header)
+        {
+            return;
+        }
+
+        ResetClickedHeaders(header);
+        SetIsPressed(header, false);
+        SetIsClicked(header, true);
+    }
+
+    private void DataGridColumnHeaderMouseLeave(object sender, MouseEventArgs e)
+    {
+        if (e.OriginalSource is not DependencyObject source || FindAncestor<DataGridColumnHeader>(source) is not { } header)
+        {
+            return;
+        }
+
+        SetIsPressed(header, false);
     }
 
     private void UpdateHeaderVisualState(DataGridColumnHeader header, int lastDisplayIndex)
@@ -458,7 +637,7 @@ public sealed class EnecaDataGrid : DataGrid
         if (header.Column is null)
         {
             header.Visibility = Visibility.Collapsed;
-            ColumnHeaderState.SetIsFilterVisible(header, false);
+            SetIsFilterVisible(header, false);
             return;
         }
 
@@ -468,28 +647,18 @@ public sealed class EnecaDataGrid : DataGrid
         var hideRightSeparator = isCheckBoxHeader || IsLastVisibleColumn(header.Column, lastDisplayIndex);
         var isFilterVisible = !isCheckBoxHeader
             && header.Column.Header is ColumnFilterViewModel
-            && GetColumnFilterVisibility(header.Column);
+            && GetIsFilterVisible(header.Column);
 
-        ColumnHeaderState.SetIsCheckBoxHeader(header, isCheckBoxHeader);
-        ColumnHeaderState.SetHideRightSeparator(header, hideRightSeparator);
-        ColumnHeaderState.SetIsFilterVisible(header, isFilterVisible);
-    }
-
-    private static bool GetColumnFilterVisibility(DataGridColumn column)
-    {
-        if (column is IFilterVisibilityColumn filterVisibilityColumn)
-        {
-            return filterVisibilityColumn.IsFilterVisible;
-        }
-
-        return ColumnHeaderState.GetIsFilterVisible(column);
+        SetIsCheckBoxHeader(header, isCheckBoxHeader);
+        SetHideRightSeparator(header, hideRightSeparator);
+        SetIsFilterVisible(header, isFilterVisible);
     }
 
     private void UpdateCellVisualState(DataGridCell cell, int lastDisplayIndex)
     {
         var hideRightSeparator = ReferenceEquals(cell.Column, _checkBoxColumn)
             || IsLastVisibleColumn(cell.Column, lastDisplayIndex);
-        ColumnHeaderState.SetHideRightSeparator(cell, hideRightSeparator);
+        SetHideRightSeparator(cell, hideRightSeparator);
     }
 
     private int GetLastVisibleDisplayIndex()
@@ -501,31 +670,42 @@ public sealed class EnecaDataGrid : DataGrid
             .Max();
     }
 
-    private static bool IsLastVisibleColumn(DataGridColumn? column, int lastDisplayIndex)
+    private bool IsLastVisibleColumn(DataGridColumn? column, int lastDisplayIndex)
     {
         return column is not null
             && column.Visibility == Visibility.Visible
             && column.DisplayIndex == lastDisplayIndex;
     }
 
-    private static T? FindAncestor<T>(DependencyObject current)
+    private void ResetClickedHeaders(DataGridColumnHeader activeHeader)
+    {
+        foreach (var header in FindDescendants<DataGridColumnHeader>(this))
+        {
+            if (!ReferenceEquals(header, activeHeader))
+            {
+                SetIsPressed(header, false);
+                SetIsClicked(header, false);
+            }
+        }
+    }
+
+    private T? FindAncestor<T>(DependencyObject? current)
         where T : DependencyObject
     {
-        var parent = VisualTreeHelper.GetParent(current);
-        while (parent is not null)
+        while (current is not null)
         {
-            if (parent is T match)
+            if (current is T match)
             {
                 return match;
             }
 
-            parent = VisualTreeHelper.GetParent(parent);
+            current = VisualTreeHelper.GetParent(current);
         }
 
         return null;
     }
 
-    private static bool IsInteractiveContentHit(DependencyObject? originalSource, DataGridCell ownerCell)
+    private bool IsInteractiveContentHit(DependencyObject? originalSource, DataGridCell ownerCell)
     {
         var current = originalSource;
         while (current is not null && !ReferenceEquals(current, ownerCell))
@@ -544,7 +724,7 @@ public sealed class EnecaDataGrid : DataGrid
         return false;
     }
 
-    private static IEnumerable<T> FindDescendants<T>(DependencyObject current)
+    private IEnumerable<T> FindDescendants<T>(DependencyObject current)
         where T : DependencyObject
     {
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(current); i++)
@@ -560,5 +740,177 @@ public sealed class EnecaDataGrid : DataGrid
                 yield return descendant;
             }
         }
+    }
+
+    private static void OnResizeThumbIconIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not Thumb thumb)
+        {
+            return;
+        }
+
+        if ((bool)e.NewValue)
+        {
+            AttachResizeThumbIcon(thumb);
+        }
+        else
+        {
+            DetachResizeThumbIcon(thumb);
+        }
+    }
+
+    private static void OnResizeThumbIconSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is Thumb thumb && GetResizeThumbIconState(thumb) is { } state)
+        {
+            state.Icon.Source = (ImageSource?)e.NewValue;
+        }
+    }
+
+    private static void AttachResizeThumbIcon(Thumb thumb)
+    {
+        if (GetResizeThumbIconState(thumb) is not null)
+        {
+            return;
+        }
+
+        var icon = new Image
+        {
+            Width = 16,
+            Height = 16,
+            Source = GetResizeThumbIconSource(thumb),
+            IsHitTestVisible = false
+        };
+
+        var popup = new Popup
+        {
+            AllowsTransparency = true,
+            Focusable = false,
+            IsHitTestVisible = false,
+            Placement = PlacementMode.Relative,
+            PlacementTarget = thumb,
+            Child = icon
+        };
+
+        var state = new ResizeThumbIconState(popup, icon);
+        SetResizeThumbIconState(thumb, state);
+
+        thumb.Cursor = Cursors.None;
+        thumb.MouseEnter += ThumbMouseEnter;
+        thumb.MouseMove += ThumbMouseMove;
+        thumb.MouseLeave += ThumbMouseLeave;
+        thumb.DragStarted += ThumbDragStarted;
+        thumb.DragDelta += ThumbDragDelta;
+        thumb.DragCompleted += ThumbDragCompleted;
+        thumb.Unloaded += ThumbUnloaded;
+    }
+
+    private static void DetachResizeThumbIcon(Thumb thumb)
+    {
+        if (GetResizeThumbIconState(thumb) is not { } state)
+        {
+            return;
+        }
+
+        state.Popup.IsOpen = false;
+        SetResizeThumbIconState(thumb, null);
+
+        thumb.MouseEnter -= ThumbMouseEnter;
+        thumb.MouseMove -= ThumbMouseMove;
+        thumb.MouseLeave -= ThumbMouseLeave;
+        thumb.DragStarted -= ThumbDragStarted;
+        thumb.DragDelta -= ThumbDragDelta;
+        thumb.DragCompleted -= ThumbDragCompleted;
+        thumb.Unloaded -= ThumbUnloaded;
+    }
+
+    private static void ThumbMouseEnter(object sender, MouseEventArgs e)
+    {
+        if (sender is Thumb thumb)
+        {
+            ShowResizeThumbIconAtMouse(thumb);
+        }
+    }
+
+    private static void ThumbMouseMove(object sender, MouseEventArgs e)
+    {
+        if (sender is Thumb thumb)
+        {
+            ShowResizeThumbIconAtMouse(thumb);
+        }
+    }
+
+    private static void ThumbMouseLeave(object sender, MouseEventArgs e)
+    {
+        if (sender is Thumb thumb && GetResizeThumbIconState(thumb) is { IsDragging: false } state)
+        {
+            state.Popup.IsOpen = false;
+        }
+    }
+
+    private static void ThumbDragStarted(object sender, DragStartedEventArgs e)
+    {
+        if (sender is Thumb thumb && GetResizeThumbIconState(thumb) is { } state)
+        {
+            state.IsDragging = true;
+            ShowResizeThumbIconAtMouse(thumb);
+        }
+    }
+
+    private static void ThumbDragDelta(object sender, DragDeltaEventArgs e)
+    {
+        if (sender is Thumb thumb)
+        {
+            ShowResizeThumbIconAtMouse(thumb);
+        }
+    }
+
+    private static void ThumbDragCompleted(object sender, DragCompletedEventArgs e)
+    {
+        if (sender is Thumb thumb && GetResizeThumbIconState(thumb) is { } state)
+        {
+            state.IsDragging = false;
+            state.Popup.IsOpen = thumb.IsMouseOver;
+            if (thumb.IsMouseOver)
+            {
+                ShowResizeThumbIconAtMouse(thumb);
+            }
+        }
+    }
+
+    private static void ThumbUnloaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Thumb thumb)
+        {
+            DetachResizeThumbIcon(thumb);
+        }
+    }
+
+    private static void ShowResizeThumbIconAtMouse(Thumb thumb)
+    {
+        if (GetResizeThumbIconState(thumb) is not { } state)
+        {
+            return;
+        }
+
+        var position = Mouse.GetPosition(thumb);
+        state.Popup.HorizontalOffset = position.X - state.Icon.Width / 2;
+        state.Popup.VerticalOffset = position.Y - state.Icon.Height / 2;
+        state.Popup.IsOpen = true;
+    }
+
+    private sealed class ResizeThumbIconState
+    {
+        public ResizeThumbIconState(Popup popup, Image icon)
+        {
+            Popup = popup;
+            Icon = icon;
+        }
+
+        public Popup Popup { get; }
+
+        public Image Icon { get; }
+
+        public bool IsDragging { get; set; }
     }
 }

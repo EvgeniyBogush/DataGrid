@@ -1,8 +1,8 @@
 namespace EnecaDataGrid;
 
-public static class OrderRows
+public sealed class OrderRows
 {
-    public static IReadOnlyList<OrderRow> CreateSample()
+    public IReadOnlyList<OrderRow> CreateSample()
     {
         return new[]
         {
