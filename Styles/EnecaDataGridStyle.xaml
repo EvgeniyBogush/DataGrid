@@ -69,10 +69,157 @@
 
                 <TextBlock Style="{StaticResource HeaderInteractiveTextStyle}" Text="{Binding Title}" />
 
-                <controls:ColumnFilterPopup
+                <Grid
                     Grid.Column="1"
                     Margin="8,0,0,0"
-                    Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}, Path=(controls:EnecaDataGrid.IsFilterVisible), Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed, TargetNullValue=Collapsed}" />
+                    Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}, Path=(controls:EnecaDataGrid.IsFilterVisible), Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed, TargetNullValue=Collapsed}">
+                    <ToggleButton
+                        x:Name="FilterButton"
+                        Style="{DynamicResource EnecaDataGridHeaderFilterToggleStyle}"
+                        IsEnabled="{Binding EnableHeaderSelection, RelativeSource={RelativeSource AncestorType={x:Type controls:EnecaDataGrid}}}"
+                        IsChecked="{Binding IsPopupOpen, Mode=TwoWay}"
+                        ToolTip="Filter values">
+                        <Image
+                            Width="16"
+                            Height="16"
+                            Source="{StaticResource Filter}" />
+                    </ToggleButton>
+
+                    <Popup
+                        AllowsTransparency="True"
+                        IsOpen="{Binding IsPopupOpen, Mode=TwoWay}"
+                        Placement="Bottom"
+                        PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}}"
+                        PopupAnimation="Slide"
+                        Width="{Binding PlacementTarget.ActualWidth, RelativeSource={RelativeSource Self}, FallbackValue=200}"
+                        MinWidth="200"
+                        StaysOpen="False">
+                        <Border
+                            Background="#FDFDFD"
+                            BorderThickness="0"
+                            CornerRadius="4">
+                            <Border.Effect>
+                                <DropShadowEffect
+                                    BlurRadius="14"
+                                    ShadowDepth="0"
+                                    Color="#000000"
+                                    Opacity="0.13" />
+                            </Border.Effect>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="36" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <Border
+                                    Grid.Row="0"
+                                    Background="#FDFDFD"
+                                    BorderBrush="#D0D0D0"
+                                    BorderThickness="0,0,0,1">
+                                    <Grid Margin="6,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="24" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid>
+                                            <TextBox
+                                                x:Name="SearchTextBox"
+                                                BorderThickness="0"
+                                                Background="Transparent"
+                                                VerticalContentAlignment="Center"
+                                                FontFamily="Montserrat, Segoe UI, Arial"
+                                                FontWeight="Normal"
+                                                FontSize="14"
+                                                Foreground="#6A6A6A"
+                                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" />
+                                            <TextBlock
+                                                Margin="2,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontFamily="Montserrat, Segoe UI, Arial"
+                                                FontWeight="Normal"
+                                                FontSize="14"
+                                                Foreground="#9A9A9A"
+                                                IsHitTestVisible="False"
+                                                Text="Введите...">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="{x:Type TextBlock}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Text, ElementName=SearchTextBox}" Value="{x:Null}">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Text, ElementName=SearchTextBox}" Value="">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+
+                                        <Path
+                                            Grid.Column="1"
+                                            Width="14"
+                                            Height="14"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Stretch="Uniform"
+                                            Fill="#0E7C71"
+                                            Data="M15.5,14H14.71L14.43,13.73C15.41,12.59 16,11.11 16,9.5C16,5.91 13.09,3 9.5,3C5.91,3 3,5.91 3,9.5C3,13.09 5.91,16 9.5,16C11.11,16 12.59,15.41 13.73,14.43L14,14.71V15.5L19,20.49L20.49,19L15.5,14ZM9.5,14C7.01,14 5,11.99 5,9.5C5,7.01 7.01,5 9.5,5C11.99,5 14,7.01 14,9.5C14,11.99 11.99,14 9.5,14Z" />
+                                    </Grid>
+                                </Border>
+
+                                <ScrollViewer
+                                    Grid.Row="1"
+                                    VerticalScrollBarVisibility="Auto">
+                                    <StackPanel>
+                                        <Border
+                                            Height="36"
+                                            Background="Transparent"
+                                            BorderBrush="#E0E0E0"
+                                            BorderThickness="0,0,0,1">
+                                            <CheckBox
+                                                Style="{DynamicResource EnecaDataGridFilterOptionCheckBoxStyle}"
+                                                Margin="8,0"
+                                                VerticalAlignment="Center"
+                                                Content="Выбрать все"
+                                                IsThreeState="True"
+                                                IsChecked="{Binding SelectAllState, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </Border>
+
+                                        <ItemsControl ItemsSource="{Binding OptionsView}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border
+                                                        Height="36"
+                                                        Background="Transparent">
+                                                        <Border.Style>
+                                                            <Style TargetType="{x:Type Border}">
+                                                                <Setter Property="Background" Value="Transparent" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                        <Setter Property="Background" Value="#D5E2DF" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <CheckBox
+                                                            Style="{DynamicResource EnecaDataGridFilterOptionCheckBoxStyle}"
+                                                            Margin="8,0"
+                                                            VerticalAlignment="Center"
+                                                            Content="{Binding DisplayValue}"
+                                                            IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Popup>
+                </Grid>
             </Grid>
         </Border>
     </DataTemplate>
@@ -404,7 +551,7 @@
     <Style x:Key="EnecaDataGridFilterPopupBorderStyle" TargetType="{x:Type Border}">
         <Setter Property="Width" Value="260" />
         <Setter Property="Padding" Value="12" />
-        <Setter Property="Background" Value="White" />
+        <Setter Property="Background" Value="#FDFDFD" />
         <Setter Property="BorderBrush" Value="{StaticResource GridBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>

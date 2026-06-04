@@ -9,5 +9,15 @@
     <RootNamespace>EnecaDataGrid</RootNamespace>
     <Product>EnecaDataGrid</Product>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\windows-library-ui\EnecaUI3\EnecaUI3.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="artifacts\**\*.cs" />
+    <Page Remove="artifacts\**\*.xaml" />
+    <EmbeddedResource Remove="artifacts\**\*" />
+    <None Remove="artifacts\**\*" />
+  </ItemGroup>
 
 </Project>

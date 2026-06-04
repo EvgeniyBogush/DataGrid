@@ -12,6 +12,8 @@ public sealed class ColumnFilterViewModel : NotifyObject
     private string _searchText = string.Empty;
     private bool _isPopupOpen;
     private bool _isBulkUpdating;
+    private bool? _selectAllState = true;
+    private string? _selectedSingleValue;
 
     public ColumnFilterViewModel(
         string title,
@@ -57,6 +59,30 @@ public sealed class ColumnFilterViewModel : NotifyObject
         set => SetProperty(ref _isPopupOpen, value);
     }
 
+    public bool? SelectAllState
+    {
+        get => _selectAllState;
+        set
+        {
+            if (SetProperty(ref _selectAllState, value))
+            {
+                ApplySelectAllState(value);
+            }
+        }
+    }
+
+    public string? SelectedSingleValue
+    {
+        get => _selectedSingleValue;
+        set
+        {
+            if (SetProperty(ref _selectedSingleValue, value))
+            {
+                ApplySingleValueSelection();
+            }
+        }
+    }
+
     public string FilterSummary
     {
         get
@@ -85,6 +111,8 @@ public sealed class ColumnFilterViewModel : NotifyObject
             Options.Add(new FilterOptionViewModel(value, isSelected, HandleOptionSelectionChanged));
         }
 
+        SyncSelectedSingleValueFromOptions();
+        UpdateSelectAllState();
         NotifyFilterChanged();
         OptionsView.Refresh();
     }
@@ -138,7 +166,72 @@ public sealed class ColumnFilterViewModel : NotifyObject
 
     private void NotifyFilterChanged()
     {
+        SyncSelectedSingleValueFromOptions();
+        UpdateSelectAllState();
         OnPropertyChanged(nameof(FilterSummary));
         _filterChanged();
+    }
+
+    private void ApplySingleValueSelection()
+    {
+        if (_isBulkUpdating)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(SelectedSingleValue))
+        {
+            UpdateSelections(_ => true);
+            return;
+        }
+
+        UpdateSelections(option => string.Equals(option.Value, SelectedSingleValue, StringComparison.Ordinal));
+    }
+
+    private void SyncSelectedSingleValueFromOptions()
+    {
+        var selectedValues = Options.Where(option => option.IsSelected).Select(option => option.Value).ToList();
+        var nextValue = selectedValues.Count == 1 ? selectedValues[0] : null;
+
+        if (string.Equals(_selectedSingleValue, nextValue, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _selectedSingleValue = nextValue;
+        OnPropertyChanged(nameof(SelectedSingleValue));
+    }
+
+    private void ApplySelectAllState(bool? state)
+    {
+        if (_isBulkUpdating || state is null)
+        {
+            return;
+        }
+
+        UpdateSelections(_ => state.Value);
+    }
+
+    private void UpdateSelectAllState()
+    {
+        var totalCount = Options.Count;
+        bool? nextState = false;
+        if (totalCount > 0)
+        {
+            var selectedCount = Options.Count(option => option.IsSelected);
+            nextState = selectedCount == 0
+                ? false
+                : selectedCount == totalCount
+                    ? true
+                    : null;
+        }
+
+        if (_selectAllState == nextState)
+        {
+            return;
+        }
+
+        _selectAllState = nextState;
+        OnPropertyChanged(nameof(SelectAllState));
     }
 }
